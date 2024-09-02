@@ -1,9 +1,5 @@
 package com.example.whatnew
 
-import androidx.activity.enableEdgeToEdge
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.whatnew.databinding.ActivityLoginBinding
-import com.example.whatnew.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
@@ -25,6 +20,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var signupTextView: TextView
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var forgotPasswordTextView:TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +36,7 @@ class LoginActivity : AppCompatActivity() {
         passwordEditText = findViewById(R.id.passwordEditText)
         loginButton = findViewById(R.id.loginButton)
         signupTextView = findViewById(R.id.signupTextView)
+        forgotPasswordTextView= findViewById(R.id.forgotPasswordTextView)
 
 
         // Set onClickListener for the login button
@@ -62,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.forgotPasswordTextView.setOnClickListener {
+        forgotPasswordTextView.setOnClickListener {
             val email = emailEditText.text.toString().trim()
 
             if (email.isEmpty()) {
