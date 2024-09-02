@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+
         // Load news when the activity is created
         loadNews()
 

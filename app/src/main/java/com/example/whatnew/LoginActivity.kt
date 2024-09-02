@@ -19,6 +19,10 @@ import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
 
+    private lateinit var emailEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var loginButton: Button
+    private lateinit var signupTextView: TextView
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
 
@@ -31,12 +35,17 @@ class LoginActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
 
+        // Initialize the views
+        emailEditText = findViewById(R.id.emailEditText)
+        passwordEditText = findViewById(R.id.passwordEditText)
+        loginButton = findViewById(R.id.loginButton)
+        signupTextView = findViewById(R.id.signupTextView)
 
 
         // Set onClickListener for the login button
-        binding.loginButton.setOnClickListener {
-            val email = binding.emailEditText.text.toString().trim()
-            val password = binding.passwordEditText.text.toString().trim()
+        loginButton.setOnClickListener {
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty() || email.isBlank() || password.isBlank() ) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
@@ -47,14 +56,14 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Set onClickListener for the signup text
-        binding.signupTextView.setOnClickListener {
+        signupTextView.setOnClickListener {
             // Navigate to the Signup Activity
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
 
         binding.forgotPasswordTextView.setOnClickListener {
-            val email = binding.emailEditText.text.toString().trim()
+            val email = emailEditText.text.toString().trim()
 
             if (email.isEmpty()) {
                 Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
