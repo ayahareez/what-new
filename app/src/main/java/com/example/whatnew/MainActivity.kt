@@ -1,13 +1,13 @@
 package com.example.whatnew
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.enableEdgeToEdge
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.example.whatnew.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,53 +16,91 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
-   //  https://newsapi.org/v2/top-headlines?country=us&category=general&apiKey=2fc4998785dd4cdf9f0298c3c617c4ae&pageSize=30
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var auth: FirebaseAuth
 
-    private lateinit var binding:ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding=ActivityMainBinding.inflate(layoutInflater)
+        // Inflate the layout using ViewBinding
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
+
+        // Set up the toolbar as the app bar
+        setSupportActionBar(binding.toolbar)
+
+        // Check if the user is logged in
+        if (auth.currentUser == null) {
+            // If not logged in, navigate to LoginActivity
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish() // Finish this activity so the user can't go back to it
+            return
+        }
+
+        // Load news when the activity is created
         loadNews()
+
+        // Set up the SwipeRefreshLayout's refresh listener
         binding.swipeRefresh.setOnRefreshListener {
             loadNews()
         }
-
     }
 
-    private fun loadNews(){
-        val retrofit=Retrofit
-            .Builder()//builder pattern enables the share of methods
+    // Inflate the menu; this adds items to the action bar if it is present
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    // Handle action bar item clicks here
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                // Handle the logout action
+                auth.signOut()
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish() // Finish this activity so the user can't go back to it
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    // Function to load news using Retrofit
+    private fun loadNews() {
+        val retrofit = Retrofit.Builder()
             .baseUrl("https://newsapi.org")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        val c =retrofit.create(NewsCallable::class.java)
-        c.getNews().enqueue(object :Callback<News>{
-            override fun onResponse(p0: Call<News>, p1: Response<News>) {
-               if(p1.isSuccessful){
-                   val news=p1.body()
-                   val articles=news?.articles!!//safe call operator=> ?.
-                   articles.removeAll{
-                       it.title=="[Removed]"
-                       it.urlToImage==null
-                   }
-                   //Log.d("trace","Articles: $articles")
-                   showNews(articles)
-                   binding.progressBar.isVisible=false
-                   binding.swipeRefresh.isRefreshing=false
-               }
+
+        val newsService = retrofit.create(NewsCallable::class.java)
+        newsService.getNews().enqueue(object : Callback<News> {
+            override fun onResponse(call: Call<News>, response: Response<News>) {
+                if (response.isSuccessful) {
+                    val news = response.body()
+                    val articles = news?.articles ?: ArrayList()
+                    articles.removeAll { it.title == "[Removed]" || it.urlToImage == null }
+                    showNews(articles)
+                    binding.progressBar.isVisible = false
+                    binding.swipeRefresh.isRefreshing = false
+                }
             }
 
-            override fun onFailure(p0: Call<News>, p1: Throwable) {
-                Log.d("trace","Error: ${p1.message}")
-                binding.progressBar.isVisible=false
+            override fun onFailure(call: Call<News>, t: Throwable) {
+                binding.progressBar.isVisible = false
+                binding.swipeRefresh.isRefreshing = false
             }
         })
     }
-    private fun showNews( articles:ArrayList<Article>){
-        val adapter=NewsAdapter(this, articles)
-        binding.newsRv.adapter=adapter
 
+    // Function to display news articles in the RecyclerView
+    private fun showNews(articles: ArrayList<Article>) {
+        val adapter = NewsAdapter(this, articles)
+        binding.newsRv.adapter = adapter
     }
 }
