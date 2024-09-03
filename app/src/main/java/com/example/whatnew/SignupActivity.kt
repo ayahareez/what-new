@@ -45,11 +45,25 @@ class SignupActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign up success, navigate to the login activity or home
-                    Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    startActivity(intent)
-                    finish() // Close the signup activity
+                    // Send verification email
+                    auth.currentUser?.sendEmailVerification()
+                        ?.addOnCompleteListener { verifyTask ->
+                            if (verifyTask.isSuccessful) {
+                                // Email sent successfully
+                                Toast.makeText(this, "Registration successful. Please check your email for verification.", Toast.LENGTH_LONG).show()
+
+                                // Sign the user out after registration to prevent them from accessing the app without email verification
+                                auth.signOut()
+
+                                // Navigate back to login activity
+                                val intent = Intent(this, LoginActivity::class.java)
+                                startActivity(intent)
+                                finish() // Close the signup activity
+                            } else {
+                                // Failed to send verification email
+                                Toast.makeText(this, "Failed to send verification email: ${verifyTask.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
                 } else {
                     // If sign up fails, display a message to the user.
                     Toast.makeText(this, "Registration failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()

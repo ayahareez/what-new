@@ -74,16 +74,25 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // Close the login activity
+                    val user = auth.currentUser
+                    if (user != null && user.isEmailVerified) {
+                        // Email is verified, proceed to main activity
+                        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish() // Close the login activity
+                    } else {
+                        // Email is not verified, sign out and show a message
+                        auth.signOut()
+                        Toast.makeText(this, "Please verify your email first.", Toast.LENGTH_LONG).show()
+                    }
                 } else {
                     // If sign in fails, display a message to the user.
                     Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
-                }
-        }
+            }
+    }
+
 
     private fun resetPassword(email: String) {
         auth.sendPasswordResetEmail(email)
