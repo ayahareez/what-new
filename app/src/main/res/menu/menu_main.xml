@@ -6,6 +6,14 @@
     <item
         android:id="@+id/action_logout"
         android:title="Logout"
-        android:icon="@drawable/logout" /> <!-- Ensure that the drawable logout exists -->
+        android:icon="@drawable/logout" />
+    <item
+        android:id="@+id/action_favorite"
+        android:title="Favorite"
+        android:icon="@drawable/favorite" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@drawable/settings" />
 
 </menu>
